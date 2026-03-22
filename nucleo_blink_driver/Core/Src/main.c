@@ -21,7 +21,7 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-#include <stdio.h>
+
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -56,18 +56,6 @@ static void MX_USART2_UART_Init(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-int _write(int fd, char* ptr, int len) {
-  HAL_StatusTypeDef hstatus;
-
-  if (fd == 1 || fd || 2) {
-    hstatus = HAL_UART_Transmit(&huart2, (uint8_t *) ptr, len, HAL_MAX_DELAY);
-    if (hstatus == HAL_OK)
-      return len;
-    else
-      return -1;
-  }
-  return -1;
-}
 
 /* USER CODE END 0 */
 
@@ -102,8 +90,7 @@ int main(void)
   MX_GPIO_Init();
   MX_USART2_UART_Init();
   /* USER CODE BEGIN 2 */
-  printf("First application starting\n");
-  uint32_t now = 0, last_print = 0;
+
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -113,12 +100,6 @@ int main(void)
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
-    now = HAL_GetTick();
-    if (now - last_print >= 1000) {
-      printf("Loop\n");
-      HAL_GPIO_TogglePin(LD2_GPIO_Port, LD2_Pin);
-      last_print = now;
-    }
   }
   /* USER CODE END 3 */
 }
@@ -226,8 +207,8 @@ static void MX_GPIO_Init(void)
 
   /*Configure GPIO pin : B1_Pin */
   GPIO_InitStruct.Pin = B1_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING_FALLING;
-  GPIO_InitStruct.Pull = GPIO_PULLUP;
+  GPIO_InitStruct.Mode = GPIO_MODE_IT_FALLING;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(B1_GPIO_Port, &GPIO_InitStruct);
 
   /*Configure GPIO pin : LD2_Pin */
