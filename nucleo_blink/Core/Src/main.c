@@ -22,6 +22,7 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include <stdio.h>
+#include <stdbool.h>
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -43,7 +44,7 @@
 UART_HandleTypeDef huart2;
 
 /* USER CODE BEGIN PV */
-
+uint8_t btn_pressed = 0;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -56,6 +57,7 @@ static void MX_USART2_UART_Init(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
+
 int _write(int fd, char* ptr, int len) {
   HAL_StatusTypeDef hstatus;
 
@@ -67,6 +69,12 @@ int _write(int fd, char* ptr, int len) {
       return -1;
   }
   return -1;
+}
+
+void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
+  if (GPIO_Pin == B1_Pin) {
+    btn_pressed = 1;
+  }
 }
 
 /* USER CODE END 0 */
@@ -103,21 +111,28 @@ int main(void)
   MX_USART2_UART_Init();
   /* USER CODE BEGIN 2 */
   printf("First application starting\n");
-  uint32_t now = 0, last_print = 0;
+  uint32_t now = 0, last_print = 0, last_toggle = 0;
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
-  while (1)
-  {
+  while (1) {
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
     now = HAL_GetTick();
-    if (now - last_print >= 1000) {
-      printf("Loop\n");
+    if (now - last_toggle >= 500) {
+      printf("Toggle LD2\n");
       HAL_GPIO_TogglePin(LD2_GPIO_Port, LD2_Pin);
+      last_toggle = now;
+    }
+    if (now - last_print >= 1000) {
+      printf("Loop %lu\n", now / 1000);
       last_print = now;
+    }
+    if (btn_pressed == 1) {
+      printf("Button pressed\n");
+      btn_pressed = 0;
     }
   }
   /* USER CODE END 3 */
@@ -226,7 +241,7 @@ static void MX_GPIO_Init(void)
 
   /*Configure GPIO pin : B1_Pin */
   GPIO_InitStruct.Pin = B1_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING_FALLING;
+  GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
   GPIO_InitStruct.Pull = GPIO_PULLUP;
   HAL_GPIO_Init(B1_GPIO_Port, &GPIO_InitStruct);
 
@@ -236,6 +251,10 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(LD2_GPIO_Port, &GPIO_InitStruct);
+
+  /* EXTI interrupt init*/
+  HAL_NVIC_SetPriority(EXTI15_10_IRQn, 0, 0);
+  HAL_NVIC_EnableIRQ(EXTI15_10_IRQn);
 
   /* USER CODE BEGIN MX_GPIO_Init_2 */
 
